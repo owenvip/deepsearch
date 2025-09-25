@@ -1,4 +1,8 @@
-import { Message, SystemMessage, AssistantMessage } from './Message'
+import dotenv from 'dotenv';
+import { Message, SystemMessage, AssistantMessage, ToolMessage, ToolCall } from './component/Message'
+import { Tools } from './component/Tools'
+
+dotenv.config()
 
 interface ResponseFormat {
     type: 'text' | 'json_object';
@@ -14,11 +18,15 @@ interface LLMConfig {
 interface ModelConfig {
     responseFormat: ResponseFormat
     introduction: string
+    tools: Tools
+    autoRunTools?: boolean;
 }
 
 export class Model {
     private llmBaseConfig: LLMConfig
-    private message: Message[]
+    private messages: Message[]
+    private tools: Tools
+    private autoRunTools: boolean = true;
 
     constructor(config: ModelConfig) {
         if (!process.env.MODEL_NAME || !process.env.DEEPSEEK_API_KEY || !process.env.BASE_URL) {
@@ -32,19 +40,133 @@ export class Model {
                 type: 'text',
             },
         }
-        this.message = [new SystemMessage(config.introduction)]
+        this.messages = [new SystemMessage(config.introduction)]
+        this.tools = config.tools ?? new Tools([])
+        this.autoRunTools = config.autoRunTools !== false
     }
 
     public async start(messages?: Message[]): Promise<AssistantMessage> {
         const { model, apiKey, baseUrl, response_format } = this.llmBaseConfig;
-        let response: AssistantMessage
 
-        this.message.push(...(messages ?? []))
+        this.messages.push(...(messages ?? []))
 
         const resp = await fetch(baseUrl, {
-
+            method: 'POST',
+            headers: {
+                Authorization: `Bearer ${apiKey}`,
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+                model,
+                stream: true,
+                messages: this.messages,
+                response_format
+            })
         })
-        
-        return response
+
+        if (!resp.ok) {
+            console.log('Response status:', resp.status);
+            console.log('Response statusText:', resp.statusText);
+            const errorText = await resp.text();
+            console.log('Error response:', errorText);
+            throw new Error(`API Error: ${resp.status} ${resp.statusText} - ${errorText}`);
+        }
+
+        let buffer = '';
+        let assistantMessage = '';
+        let tools: Record<number, ToolCall> = {};
+
+        const reader = resp.body?.getReader();
+        const decoder = new TextDecoder();
+
+        while (true) {
+            const { done, value } = (await reader?.read()) || {};
+            if (done) {
+                break;
+            }
+            buffer += decoder.decode(value, { stream: true });
+            const lines = buffer.split('\n');
+            buffer = lines.pop() || ''; // Keep the last incomplete line in buffer
+
+            for (const line of lines) {
+                if (line.trim() === '') continue;
+                if (line.startsWith('data: ')) {
+                    const data = line.slice(6);
+                    if (data === '[DONE]') {
+                        break;
+                    }
+                    try {
+                        const parsed = JSON.parse(data);
+                        const delta = parsed.choices?.[0]?.delta;
+                        if (delta?.content) {
+                            assistantMessage += delta.content;
+                        }
+                        // 处理多个工具调用
+                        if (delta?.tool_calls) {
+                            delta?.tool_calls.forEach((toolCall: any) => {
+                                if (tools[toolCall.index]) {
+                                    tools[toolCall.index].function.arguments += toolCall.function.arguments;
+                                } else {
+                                    tools[toolCall.index] = toolCall;
+                                }
+                            });
+                        }
+                    } catch (e) {
+                        console.log('Failed to parse JSON:', data);
+                    }
+                }
+            }
+        }
+
+        let response: AssistantMessage
+
+        if (assistantMessage && Object.keys(tools).length === 0) {
+            console.log(`\n🤖 Assistant:\n${assistantMessage}\n`);
+            response = new AssistantMessage(assistantMessage);
+            this.messages.push(response);
+        }
+
+        if (Object.keys(tools).length > 0) {
+            const tool_calls = Object.values(tools).map((tool) => tool);
+
+            if (this.autoRunTools) {
+                console.log(`\n🤖 Assistant with Tools:`),
+                    assistantMessage && console.log(`📝 Content: ${assistantMessage}`),
+                    console.log(`🔧 Tools: ${tool_calls.map((tool) => `${tool.function.name}(${tool.function.arguments})`).join(', ')}`),
+                    console.log('')
+                response = new AssistantMessage(assistantMessage, tool_calls);
+                this.messages.push(response);
+
+                const callToolTasks = Object.values(tools).map(async (tool) => {
+                    let result = '';
+                    try {
+                        result = await this.tools.call(tool.function.name, JSON.parse(tool.function.arguments));
+                    } catch (error) {
+                        result = `${tool.function.name} 执行异常`;
+                    }
+                    return JSON.stringify(result);
+                });
+                const toolResults = await Promise.all(callToolTasks);
+                const toolResultMessages = toolResults.map((result, index) => {
+                    console.log(`🛠️  Tool Result: ${result}`);
+                    return new ToolMessage(result, tools[index].id);
+                });
+                this.messages.push(...toolResultMessages);
+
+                return await this.start();
+            } else {
+                console.log(`\n🤖 Assistant with Tools (Manual Mode):`),
+                    assistantMessage && console.log(`📝 Content: ${assistantMessage}`),
+                    console.log(`🔧 Tools: ${tool_calls.map((tool) => `${tool.function.name}(${tool.function.arguments})`).join(', ')}`),
+                    console.log('');
+                response = new AssistantMessage(assistantMessage, tool_calls);
+            }
+        }
+
+        return response!
+    }
+
+    public getMessages() {
+        return this.messages;
     }
 }
