@@ -15,7 +15,7 @@ interface LLMConfig {
     response_format?: ResponseFormat
 }
 
-interface ModelConfig {
+interface ModelUserConfig {
     responseFormat: ResponseFormat
     introduction: string
     tools: Tools
@@ -28,7 +28,7 @@ export class Model {
     private tools: Tools
     private autoRunTools: boolean = true;
 
-    constructor(config: ModelConfig) {
+    constructor(config: ModelUserConfig) {
         if (!process.env.MODEL_NAME || !process.env.DEEPSEEK_API_KEY || !process.env.BASE_URL) {
             throw new Error('MODEL_NAME, DEEPSEEK_API_KEY, BASE_URL are not defined');
         }
@@ -49,7 +49,8 @@ export class Model {
         const { model, apiKey, baseUrl, response_format } = this.llmBaseConfig;
 
         this.messages.push(...(messages ?? []))
-
+        
+        // 调用 LLM API
         const resp = await fetch(baseUrl, {
             method: 'POST',
             headers: {
@@ -80,6 +81,7 @@ export class Model {
         const decoder = new TextDecoder();
 
         while (true) {
+            // 流式的存储 LLM 的回复以及工具调用指令
             const { done, value } = (await reader?.read()) || {};
             if (done) {
                 break;
@@ -120,13 +122,16 @@ export class Model {
 
         let response: AssistantMessage
 
+         // 没有工具调用，会直接回复
         if (assistantMessage && Object.keys(tools).length === 0) {
             console.log(`\n🤖 Assistant:\n${assistantMessage}\n`);
             response = new AssistantMessage(assistantMessage);
             this.messages.push(response);
         }
 
+        // 有工具调用，需要调用工具，自动触发一轮新的对话
         if (Object.keys(tools).length > 0) {
+            // 提取参数
             const tool_calls = Object.values(tools).map((tool) => tool);
 
             if (this.autoRunTools) {
@@ -137,6 +142,7 @@ export class Model {
                 response = new AssistantMessage(assistantMessage, tool_calls);
                 this.messages.push(response);
 
+                // 执行全部的工具
                 const callToolTasks = Object.values(tools).map(async (tool) => {
                     let result = '';
                     try {
@@ -147,12 +153,13 @@ export class Model {
                     return JSON.stringify(result);
                 });
                 const toolResults = await Promise.all(callToolTasks);
+                // 每个工具的结果，创建一个 tool message 存入对话上下文中
                 const toolResultMessages = toolResults.map((result, index) => {
                     console.log(`🛠️  Tool Result: ${result}`);
                     return new ToolMessage(result, tools[index].id);
                 });
                 this.messages.push(...toolResultMessages);
-
+                // 触发新一轮的对话
                 return await this.start();
             } else {
                 console.log(`\n🤖 Assistant with Tools (Manual Mode):`),
