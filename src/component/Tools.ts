@@ -14,7 +14,7 @@ export interface Tool {
       required?: string[];
     };
   };
-  func: (args?: unknown) => Promise<any>;
+  func: (args?: any) => Promise<any>;
 }
 
 export class Tools {

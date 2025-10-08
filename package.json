@@ -12,5 +12,8 @@
   "devDependencies": {
     "@types/node": "^24.5.2",
     "dotenv": "^17.2.2"
+  },
+  "dependencies": {
+    "@tavily/core": "^0.5.12"
   }
 }
