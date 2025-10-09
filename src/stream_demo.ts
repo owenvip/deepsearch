@@ -5,7 +5,7 @@ import * as dotenv from "dotenv";
 dotenv.config();
 
 const model = new ChatAlibabaTongyi({
-  alibabaApiKey: process.env.OPENAI_API_KEY,
+  alibabaApiKey: process.env.ALIBABA_API_KEY,
   modelName: "qwen2.5-math-1.5b-instruct",
   streaming: true, // 启用流式响应
 });
