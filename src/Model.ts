@@ -17,7 +17,7 @@ interface LLMConfig {
 
 interface ModelUserConfig {
     responseFormat: ResponseFormat
-    question: string
+    prompt: string
     tools: Tools
     autoRunTools?: boolean;
 }
@@ -40,7 +40,7 @@ export class Model {
                 type: 'text',
             },
         }
-        this.messages = [new SystemMessage(config.question)]
+        this.messages = [new SystemMessage(config.prompt)]
         this.tools = config.tools ?? new Tools([])
         this.autoRunTools = config.autoRunTools !== false
     }
