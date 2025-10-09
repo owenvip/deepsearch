@@ -11,9 +11,13 @@
   "license": "ISC",
   "devDependencies": {
     "@types/node": "^24.5.2",
-    "dotenv": "^17.2.2"
+    "dotenv": "^17.2.2",
+    "nodemon": "^3.1.10"
   },
   "dependencies": {
+    "@langchain/community": "^0.3.57",
+    "@langchain/core": "^0.3.78",
+    "@langchain/tavily": "^0.1.5",
     "@tavily/core": "^0.5.12"
   }
 }
