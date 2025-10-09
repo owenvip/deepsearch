@@ -14,7 +14,7 @@ const agentTools = [
 
 // 初始化模型
 const model = new ChatAlibabaTongyi({
-  alibabaApiKey: process.env.OPENAI_API_KEY,
+  alibabaApiKey: process.env.ALIBABA_API_KEY,
   modelName: "qwen2.5-math-1.5b-instruct",
   temperature: 0.7,
   maxTokens: 1000,
