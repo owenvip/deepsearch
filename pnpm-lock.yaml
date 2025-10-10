@@ -7,10 +7,13 @@ settings:
 dependencies:
   '@langchain/community':
     specifier: ^0.3.57
-    version: 0.3.57(@browserbasehq/stagehand@1.14.0)(@ibm-cloud/watsonx-ai@1.6.13)(@langchain/core@0.3.78)(axios@1.12.2)(ibm-cloud-sdk-core@5.4.3)(openai@5.12.2)
+    version: 0.3.57(@browserbasehq/stagehand@1.14.0)(@ibm-cloud/watsonx-ai@1.6.13)(@langchain/core@0.3.78)(@langchain/ollama@0.2.4)(axios@1.12.2)(ibm-cloud-sdk-core@5.4.3)(openai@5.12.2)
   '@langchain/core':
     specifier: ^0.3.78
     version: 0.3.78(openai@5.12.2)
+  '@langchain/ollama':
+    specifier: ^0.2.4
+    version: 0.2.4(@langchain/core@0.3.78)
   '@langchain/tavily':
     specifier: ^0.1.5
     version: 0.1.5(@langchain/core@0.3.78)
@@ -130,7 +133,7 @@ packages:
     resolution: {integrity: sha512-iUKgm52T8HOE/makSxjqoWhe95ZJA1/G1sYsGev2JDKUSS14KAgg1LHb+Ba+IPow0xflbnSkOsZcO08C7w1gYw==}
     dev: false
 
-  /@langchain/community@0.3.57(@browserbasehq/stagehand@1.14.0)(@ibm-cloud/watsonx-ai@1.6.13)(@langchain/core@0.3.78)(axios@1.12.2)(ibm-cloud-sdk-core@5.4.3)(openai@5.12.2):
+  /@langchain/community@0.3.57(@browserbasehq/stagehand@1.14.0)(@ibm-cloud/watsonx-ai@1.6.13)(@langchain/core@0.3.78)(@langchain/ollama@0.2.4)(axios@1.12.2)(ibm-cloud-sdk-core@5.4.3)(openai@5.12.2):
     resolution: {integrity: sha512-xUe5UIlh1yZjt/cMtdSVlCoC5xm/RMN/rp+KZGLbquvjQeONmQ2rvpCqWjAOgQ6SPLqKiXvoXaKSm20r+LHISw==}
     engines: {node: '>=18'}
     peerDependencies:
@@ -520,7 +523,7 @@ packages:
       flat: 5.0.2
       ibm-cloud-sdk-core: 5.4.3
       js-yaml: 4.1.0
-      langchain: 0.3.35(@langchain/core@0.3.78)(axios@1.12.2)(openai@5.12.2)
+      langchain: 0.3.35(@langchain/core@0.3.78)(@langchain/ollama@0.2.4)(axios@1.12.2)(openai@5.12.2)
       langsmith: 0.3.73(openai@5.12.2)
       openai: 5.12.2(zod@3.25.76)
       uuid: 10.0.0
@@ -568,6 +571,17 @@ packages:
       - '@opentelemetry/exporter-trace-otlp-proto'
       - '@opentelemetry/sdk-trace-base'
       - openai
+    dev: false
+
+  /@langchain/ollama@0.2.4(@langchain/core@0.3.78):
+    resolution: {integrity: sha512-XThDrZurNPcUO6sasN13rkes1aGgu5gWAtDkkyIGT3ZeMOvrYgPKGft+bbhvsigTIH9C01TfPzrSp8LAmvHIjA==}
+    engines: {node: '>=18'}
+    peerDependencies:
+      '@langchain/core': '>=0.3.58 <0.4.0'
+    dependencies:
+      '@langchain/core': 0.3.78(openai@5.12.2)
+      ollama: 0.5.18
+      uuid: 10.0.0
     dev: false
 
   /@langchain/openai@0.6.14(@langchain/core@0.3.78):
@@ -1307,7 +1321,7 @@ packages:
       safe-buffer: 5.2.1
     dev: false
 
-  /langchain@0.3.35(@langchain/core@0.3.78)(axios@1.12.2)(openai@5.12.2):
+  /langchain@0.3.35(@langchain/core@0.3.78)(@langchain/ollama@0.2.4)(axios@1.12.2)(openai@5.12.2):
     resolution: {integrity: sha512-OkPstP43L3rgaAk72UAVcXy4BzJSiyzXfJsHRBTx9xD3rRtgrAu/jsWpMcsbFAoNO3iGerK+ULzkTzaBJBz6kg==}
     engines: {node: '>=18'}
     peerDependencies:
@@ -1366,6 +1380,7 @@ packages:
         optional: true
     dependencies:
       '@langchain/core': 0.3.78(openai@5.12.2)
+      '@langchain/ollama': 0.2.4(@langchain/core@0.3.78)
       '@langchain/openai': 0.6.14(@langchain/core@0.3.78)
       '@langchain/textsplitters': 0.1.0(@langchain/core@0.3.78)
       axios: 1.12.2(debug@4.4.3)
@@ -1540,6 +1555,12 @@ packages:
     resolution: {integrity: sha512-6eZs5Ls3WtCisHWp9S2GUy8dqkpGi4BVSz3GaqiE6ezub0512ESztXUwUB6C6IKbQkY2Pnb/mD4WYojCRwcwLA==}
     engines: {node: '>=0.10.0'}
     dev: true
+
+  /ollama@0.5.18:
+    resolution: {integrity: sha512-lTFqTf9bo7Cd3hpF6CviBe/DEhewjoZYd9N/uCe7O20qYTvGqrNOFOBDj3lbZgFWHUgDv5EeyusYxsZSLS8nvg==}
+    dependencies:
+      whatwg-fetch: 3.6.20
+    dev: false
 
   /openai@5.12.2(zod@3.25.76):
     resolution: {integrity: sha512-xqzHHQch5Tws5PcKR2xsZGX9xtch+JQFz5zb14dGqlshmmDAFBFEWmeIpf7wVqWV+w7Emj7jRgkNJakyKE0tYQ==}
@@ -1866,6 +1887,10 @@ packages:
 
   /webidl-conversions@3.0.1:
     resolution: {integrity: sha512-2JAn3z8AR6rjK8Sm8orRC0h/bcl/DqL7tRPdGZ4I1CjdF+EaMLmYxBHyXuKL849eucPFhvBoxMsflfOb8kxaeQ==}
+    dev: false
+
+  /whatwg-fetch@3.6.20:
+    resolution: {integrity: sha512-EqhiFU6daOA8kpjOWTL0olhVOF3i7OrFzSYiGsEMB8GcXS+RrzauAERX65xMeNWVqxA6HXH2m69Z9LaKKdisfg==}
     dev: false
 
   /whatwg-url@5.0.0:
