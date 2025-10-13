@@ -7,7 +7,7 @@ import * as dotenv from "dotenv";
 dotenv.config();
 
 const model = new ChatOllama({
-    baseUrl: "http://localhost:11434",
+    baseUrl: "127.0.0.1:11434",
     model: 'qwen3:0.6b',
     temperature: 0.7,
 });
