@@ -19,6 +19,8 @@
     "@langchain/core": "^0.3.78",
     "@langchain/ollama": "^0.2.4",
     "@langchain/tavily": "^0.1.5",
-    "@tavily/core": "^0.5.12"
+    "@tavily/core": "^0.5.12",
+    "langchain": "^0.3.36",
+    "zod": "^4.1.12"
   }
 }
