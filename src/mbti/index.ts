@@ -6,7 +6,7 @@ import { DynamicStructuredTool } from "@langchain/core/tools";
 import z from 'zod'
 import mbtiInfo from './info.json'
 import { RunnableSequence, RunnableWithMessageHistory } from "@langchain/core/runnables";
-import { AgentExecutor, createOpenAIToolsAgent } from "langchain/agents";
+import { AgentExecutor, createToolCallingAgent } from "langchain/agents";
 import readline from 'readline'
 import { ChatMessageHistory } from "langchain/stores/message/in_memory";
 
@@ -49,8 +49,9 @@ const tool = new DynamicStructuredTool({
     schema: z.object({
         type: z.enum(mbtiList)
     }),
-    func: async ({ type, question }) => {
-        const info = mbtiInfo[type]
+    func: async (input) => {
+        const { type, question } = input as { type: string; question: string };
+        const info = mbtiInfo[type as keyof typeof mbtiInfo]
         return await mbtiChain.invoke({ type, question, info })
     },
     description: "根据用户的问题和 MBTI 类型，回答用户的问题",
@@ -65,7 +66,7 @@ const agentPromt = ChatPromptTemplate.fromMessages([
     new MessagesPlaceholder("agent_scratchpad"),
 ])
 
-const agent = createOpenAIToolsAgent({
+const agent = createToolCallingAgent({
     llm: model,
     tools,
     prompt: agentPromt
