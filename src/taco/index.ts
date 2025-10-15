@@ -1,52 +1,40 @@
-import { PromptTemplate } from "@langchain/core/prompts";
-import { StringOutputParser } from "@langchain/core/output_parsers";
 import { ChatOllama } from "@langchain/ollama";
-
+import { PDFLoader } from "@langchain/community/document_loaders/fs/pdf";
+import { RecursiveCharacterTextSplitter } from "langchain/text_splitter";
+import { StringOutputParser } from "@langchain/core/output_parsers";
+import { AlibabaTongyiEmbeddings } from "@langchain/community/embeddings/alibaba_tongyi";
+import { FaissStore } from "@langchain/community/vectorstores/faiss";
 import * as dotenv from "dotenv";
+import path from 'node:path'
+import { MemoryVectorStore } from "langchain/vectorstores/memory";
 
 dotenv.config();
 
-const model = new ChatOllama({
-    baseUrl: "127.0.0.1:11434",
-    model: 'qwen3:0.6b',
-    temperature: 0.7,
+const loader = new PDFLoader(path.resolve(__dirname, "wlz.pdf"), {
+    // you may need to add `.then(m => m.default)` to the end of the import
+    // @lc-ts-ignore
+    pdfjs: () => import("pdfjs-dist/legacy/build/pdf.js"),
 });
+const pdfs = await loader.load()
 
-// 创建 Prompt 模板
-const promptTemplate = PromptTemplate.fromTemplate(`
-你是一个{role}，专门帮助用户解决{domain}相关的问题。
+const splitter = new RecursiveCharacterTextSplitter({
+    chunkSize: 64,
+    chunkOverlap: 1,
+});
+const splitPdfs = await splitter.splitDocuments(pdfs);
 
-用户问题：{question}
+const embedding = new AlibabaTongyiEmbeddings({});
+// const vectorStore = new FaissStore(embedding, {});
+const vectorStore = new MemoryVectorStore(embedding)
+await vectorStore.addDocuments(splitPdfs)
+// const directory = "../db/vectors";
+// await vectorStore.save(directory);
 
-请提供详细、专业的回答，包含以下要素：
-1. 问题分析
-2. 解决方案
-3. 代码示例（如果适用）
-4. 最佳实践建议
+const result = await vectorStore.similaritySearch('藤化元')
+console.log('results:', result)
 
-回答：
-`);
-
-// 创建输出解析器
-const outputParser = new StringOutputParser();
-
-// 构建处理链
-const chain = promptTemplate.pipe(model).pipe(outputParser);
-
-async function promptTemplateExample() {
-    try {
-        const result = await chain.invoke({
-            role: "资深前端工程师",
-            domain: "React 性能优化",
-            question: "如何优化 React 应用的渲染性能？"
-        });
-
-        console.log("优化建议：");
-        console.log(result);
-
-    } catch (error) {
-        console.error("处理失败：", error);
-    }
-}
-
-promptTemplateExample();
+// const model = new ChatOllama({
+//     baseUrl: "127.0.0.1:11434",
+//     model: 'qwen3:0.6b',
+//     temperature: 0.7,
+// });
