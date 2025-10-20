@@ -10,8 +10,7 @@ import { RunnableSequence } from "@langchain/core/runnables";
 import type { Document } from "@langchain/core/documents";
 import { ChatPromptTemplate } from "@langchain/core/prompts";
 import readline from 'readline'
-
-const ollamaBaseUrl = '127.0.0.1:11434'
+import { getBaseChatModel } from '../utils'
 
 dotenv.config();
 
@@ -29,8 +28,8 @@ const splitter = new RecursiveCharacterTextSplitter({
 const splitPdfs = await splitter.splitDocuments(pdfs);
 
 const embeddings = new OllamaEmbeddings({
-    baseUrl: ollamaBaseUrl,
-    model: "nomic-embed-text", // 或者其他合适的嵌入模型
+    baseUrl: "127.0.0.1:11434",
+    model: "mxbai-embed-large",
 });
 
 // const vectorStore = new FaissStore(embedding, {});
@@ -51,11 +50,7 @@ const contextRetriverChain = RunnableSequence.from([
 // const resp = await contextRetriverChain.invoke({ question: "原文中，藤化元是怎么死的" })
 // console.log('results:', resp)
 
-const model = new ChatOllama({
-    baseUrl: ollamaBaseUrl,
-    model: 'qwen3:0.6b',
-    temperature: 0.7,
-});
+const model = getBaseChatModel()
 
 const prompt = ChatPromptTemplate.fromMessages([
     `你是一个熟读小说《仙逆》的终极原著党，精通根据作品原文详细解释和回答问题，你在回答时会引用作品原文。

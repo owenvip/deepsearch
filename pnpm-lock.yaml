@@ -11,6 +11,9 @@ dependencies:
   '@langchain/core':
     specifier: ^0.3.78
     version: 0.3.78(openai@6.3.0)
+  '@langchain/langgraph':
+    specifier: ^0.4.9
+    version: 0.4.9(@langchain/core@0.3.78)
   '@langchain/ollama':
     specifier: ^0.2.4
     version: 0.2.4(@langchain/core@0.3.78)
@@ -585,6 +588,57 @@ packages:
       - openai
     dev: false
 
+  /@langchain/langgraph-checkpoint@0.1.1(@langchain/core@0.3.78):
+    resolution: {integrity: sha512-h2bP0RUikQZu0Um1ZUPErQLXyhzroJqKRbRcxYRTAh49oNlsfeq4A3K4YEDRbGGuyPZI/Jiqwhks1wZwY73AZw==}
+    engines: {node: '>=18'}
+    peerDependencies:
+      '@langchain/core': '>=0.2.31 <0.4.0 || ^1.0.0-alpha'
+    dependencies:
+      '@langchain/core': 0.3.78(openai@6.3.0)
+      uuid: 10.0.0
+    dev: false
+
+  /@langchain/langgraph-sdk@0.1.10(@langchain/core@0.3.78):
+    resolution: {integrity: sha512-9srSCb2bSvcvehMgjA2sMMwX0o1VUgPN6ghwm5Fwc9JGAKsQa6n1S4eCwy1h4abuYxwajH5n3spBw+4I2WYbgw==}
+    peerDependencies:
+      '@langchain/core': '>=0.2.31 <0.4.0 || ^1.0.0-alpha'
+      react: ^18 || ^19
+      react-dom: ^18 || ^19
+    peerDependenciesMeta:
+      '@langchain/core':
+        optional: true
+      react:
+        optional: true
+      react-dom:
+        optional: true
+    dependencies:
+      '@langchain/core': 0.3.78(openai@6.3.0)
+      '@types/json-schema': 7.0.15
+      p-queue: 6.6.2
+      p-retry: 4.6.2
+      uuid: 9.0.1
+    dev: false
+
+  /@langchain/langgraph@0.4.9(@langchain/core@0.3.78):
+    resolution: {integrity: sha512-+rcdTGi4Ium4X/VtIX3Zw4RhxEkYWpwUyz806V6rffjHOAMamg6/WZDxpJbrP33RV/wJG1GH12Z29oX3Pqq3Aw==}
+    engines: {node: '>=18'}
+    peerDependencies:
+      '@langchain/core': '>=0.3.58 < 0.4.0'
+      zod-to-json-schema: ^3.x
+    peerDependenciesMeta:
+      zod-to-json-schema:
+        optional: true
+    dependencies:
+      '@langchain/core': 0.3.78(openai@6.3.0)
+      '@langchain/langgraph-checkpoint': 0.1.1(@langchain/core@0.3.78)
+      '@langchain/langgraph-sdk': 0.1.10(@langchain/core@0.3.78)
+      uuid: 10.0.0
+      zod: 3.25.76
+    transitivePeerDependencies:
+      - react
+      - react-dom
+    dev: false
+
   /@langchain/ollama@0.2.4(@langchain/core@0.3.78):
     resolution: {integrity: sha512-XThDrZurNPcUO6sasN13rkes1aGgu5gWAtDkkyIGT3ZeMOvrYgPKGft+bbhvsigTIH9C01TfPzrSp8LAmvHIjA==}
     engines: {node: '>=18'}
@@ -733,6 +787,10 @@ packages:
     resolution: {integrity: sha512-vIChWdVG3LG1SMxEvI/AK+FWJthlrqlTu7fbrlywTkkaONwk/UAGaULXRlf8vkzFBLVm0zkMdCquhL5aOjhXPQ==}
     dependencies:
       '@types/ms': 2.1.0
+    dev: false
+
+  /@types/json-schema@7.0.15:
+    resolution: {integrity: sha512-5+fP8P8MFNC+AyZCDxrB2pkZFPGzqQWUzpSeuuVLvm8VMcorNYavBqoFcxK8bQz4Qsbn4oUEEem4wDLfcysGHA==}
     dev: false
 
   /@types/ms@2.1.0:
